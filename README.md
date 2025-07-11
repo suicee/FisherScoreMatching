@@ -13,7 +13,7 @@ This quantity is useful for:
 - Fisher forecasting  
 - Simulation-based inference (SBI)
 
-For theoretical details, please refer to our [paper](#) (link to be added).
+For theoretical details, please refer to our [paper](https://arxiv.org/abs/2507.07833).
 
 ## Code Structure
 
