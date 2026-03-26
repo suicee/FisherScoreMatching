@@ -2,7 +2,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 from .tools import to_numpy, to_tensor
- 
+from .training_utils import check_finite, clip_gradients
+
     
 class FSM_Regressor:
 
@@ -17,7 +18,8 @@ class FSM_Regressor:
         self.model = model
         self.device = device
 
-    def train(self, input,output, lr=1e-3, epochs=1000,verbose=False):
+    def train(self, input, output, lr=1e-3, epochs=1000, verbose=False,
+              max_grad_norm=None, check_nan=True):
         '''
         train the regressor model
 
@@ -27,6 +29,8 @@ class FSM_Regressor:
         lr (float): learning rate for the optimizer
         epochs (int): number of epochs to train the model
         verbose (bool): whether to print the loss every 100 iterations
+        max_grad_norm (float or None): if set, clip gradient norms to this value
+        check_nan (bool): if True, raise RuntimeError when loss becomes NaN/Inf
         Returns:
         None
         '''
@@ -43,7 +47,15 @@ class FSM_Regressor:
             self.optimizer.zero_grad()
             pred = self.model(input)
             loss = torch.mean((output - pred)**2)
+
+            if check_nan:
+                check_finite(loss, name='loss')
+
             loss.backward()
+
+            if max_grad_norm is not None:
+                clip_gradients(self.model, max_grad_norm)
+
             self.optimizer.step()
             epoch_loss = loss.item()
 
